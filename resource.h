@@ -1,0 +1,3 @@
+#define INDEX_HTML 300
+#define MAINICON 101
+
