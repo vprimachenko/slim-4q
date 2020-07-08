@@ -1,5 +1,5 @@
 //
-// Created by le0n on 20-06-18.
+// Created by Valerij Primachenko on 20-06-18.
 //
 
 #ifndef DAS_HID_H
@@ -9,6 +9,10 @@
 
 namespace DAS {
 	namespace HID4Q {
+
+		extern const std::vector<uint8_t> OK_RESPONSE;
+		extern const std::vector<uint8_t> NOT_READY;
+
 		std::shared_ptr<char *> find_keyboard_4q();
 
 		void start_keyboard(char *_tpath);

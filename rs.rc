@@ -1,2 +1,18 @@
-300 RCDATA "index.html"
-101 ICON "main.ico"
+#include "resource.h"
+
+DAS_PY RCDATA "das.py"
+INDEX_HTML RCDATA "index.html"
+MAINICON ICON "main.ico"
+TRAY_ICON ICON "kb.ico"
+
+IDC_CONTEXTMENU MENU
+BEGIN
+	POPUP ""
+	BEGIN
+		MENUITEM "Options", IDM_OPTIONS
+		MENUITEM SEPARATOR
+		MENUITEM "E&xit", IDM_EXIT
+	END
+END
+
+

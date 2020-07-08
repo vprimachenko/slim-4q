@@ -1,77 +1,51 @@
 //
-// Created by le0n on 20-06-20.
+// Created by Valerij Primachenko on 20-06-20.
 //
 
 #ifndef DAS_KEYBOARD_H
 #define DAS_KEYBOARD_H
 
 #include <cstdint>
+#include <bitset>
 #include <memory>
-#include "constants.h"
-#include "hid.h"
+#include <map>
+#include <set>
+#include "keys.h"
+#include "json/json.hpp"
+#include "effect.h"
+#include "Config.h"
 
 namespace DAS {
 	struct Command {
-		Keys key;
-		std::vector<uint8_t> buffer;
+		Key key;
 
-		Command(Keys key, std::vector<uint8_t> buffer)
-				: key(key), buffer(buffer) {}
+		Command(Key key)
+				: key(key) {}
 
-		virtual void execute() = 0;
+		virtual bool execute() = 0;
 
 		virtual ~Command() = 0;
 	};
 
-	struct Keyboard {
+	class Keyboard {
+		std::map<Key, Config> configs;
+		std::map<Key, std::string> overrides;
+
 		virtual std::shared_ptr<Command> Flush() = 0;
+		virtual std::shared_ptr<Command> Wipe(Key key) = 0;
+		virtual std::shared_ptr<Command> createEffect(Effect effect, Key key, uint8_t r, uint8_t g, uint8_t b) = 0;
 
-		virtual std::shared_ptr<Command> Wipe(Keys key) = 0;
+		std::bitset<5> currentState, lastState;
+		void first_update();
 
-		virtual std::shared_ptr<Command> Passive_Color(Keys key, uint8_t r, uint8_t g, uint8_t b) = 0;
-
-		virtual std::shared_ptr<Command> Passive_Blink(Keys key, uint8_t r, uint8_t g, uint8_t b) = 0;
-
-		virtual std::shared_ptr<Command> Blink_(Keys key, uint8_t r, uint8_t g, uint8_t b) = 0;
-
-		virtual std::shared_ptr<Command> Active_Ripple(Keys key, uint8_t r, uint8_t g, uint8_t b) = 0;
-
-		virtual std::shared_ptr<Command> Active_InverseRipple(Keys key, uint8_t r, uint8_t g, uint8_t b) = 0;
-
-		virtual std::shared_ptr<Command> Active_Color(Keys key, uint8_t r, uint8_t g, uint8_t b, uint8_t delay) = 0;
+	public:
+		void read_config(const nlohmann::json &j);
+		void update();
+		bool add_override(const std::string& pid, const Key& key, const EffectConfig& fx);
+		bool remove_override(const std::string& pid);
 	};
 
 	std::shared_ptr<Keyboard> findKeyboard();
-
-	struct DAS4Q : public Keyboard {
-
-		std::shared_ptr<Command> Flush() override;
-
-		std::shared_ptr<Command> Wipe(Keys key) override;
-
-		std::shared_ptr<Command> Passive_Color(Keys key, uint8_t r, uint8_t g, uint8_t b) override;
-
-		std::shared_ptr<Command> Passive_Blink(Keys key, uint8_t r, uint8_t g, uint8_t b) override;
-
-		std::shared_ptr<Command> Blink_(Keys key, uint8_t r, uint8_t g, uint8_t b) override;
-
-		std::shared_ptr<Command> Active_Ripple(Keys key, uint8_t r, uint8_t g, uint8_t b) override;
-
-		std::shared_ptr<Command> Active_InverseRipple(Keys key, uint8_t r, uint8_t g, uint8_t b) override;
-
-		std::shared_ptr<Command> Active_Color(Keys key, uint8_t r, uint8_t g, uint8_t b, uint8_t delay) override;
-
-		struct Command4Q: public DAS::Command {
-			Command4Q(Keys key, std::vector<uint8_t> buffer)
-				: Command(key, buffer) {}
-
-			void execute();
-		};
-
-		DAS4Q() {}
-
-		~DAS4Q();
-	};
 }
 
 #endif //DAS_KEYBOARD_H

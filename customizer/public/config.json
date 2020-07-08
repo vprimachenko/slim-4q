@@ -1,0 +1,79 @@
+{
+	"KEY_ESCAPE": {
+		"passive" : {
+			"default": {"effect": "SET", "r": 250, "g": 0, "b": 0},
+			"CONTROL": {"effect": "SET", "r": 0, "g": 250, "b": 0},
+			"NUM_LOCK": {"effect": "SET", "r": 0, "g": 0, "b": 250},
+			"NUM_LOCK+CONTROL": {"effect": "SET", "r": 0, "g": 250, "b": 250}
+		}
+	},
+	"KEY_CAPS_LOCK": {
+		"active" : {
+			"default": {"effect": "RIPPLE", "r": 250, "g": 0, "b": 0}
+		}
+	},
+	"KEY_Q": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_W": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_E": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_R": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_T": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_Y": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_U": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_I": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_O": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_P": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_OPEN_SQUARE_BRACKET": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_CLOSE_SQUARE_BRACKET": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_A": {
+		"passive" : {
+			"default": { "effect": "SET", "r": 250, "g": 250, "b": 250},
+			"CONTROL": { "effect": "SET", "r": 0, "g": 250, "b": 0}
+		}
+	},
+	"KEY_S": {
+		"passive" : {
+			"default": {"effect": "SET", "r": 250, "g": 250, "b": 250},
+			"CONTROL": {"effect": "SET", "r": 0, "g": 250, "b": 0}
+		}
+	},
+	"KEY_D": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_F": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_G": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_H": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_J": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_K": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_L": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_SEMICOLON": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_QUOTE": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_Z": { "passive" : {"default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_X": {"passive" : {
+		"default": {"effect": "SET", "r": 250, "g": 250, "b": 250},
+		"CONTROL": {"effect": "SET", "r": 0, "g": 250, "b": 0}
+	}
+	},
+	"KEY_C": {"passive" : {
+		"default": { "effect": "SET", "r": 250, "g": 250, "b": 250},
+		"CONTROL": { "effect": "SET", "r": 0, "g": 250, "b": 0}}
+	},
+	"KEY_V": {"passive" : {
+		"default": { "effect": "SET", "r": 250, "g": 250, "b": 250},
+		"CONTROL": { "effect": "SET", "r": 0, "g": 250, "b": 0}}
+	},
+	"KEY_B": {"passive" : { "default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_N": {"passive" : { "default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_M": {"passive" : { "default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_COMMA": {"passive" : { "default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_DOT": {"passive" : { "default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+	"KEY_SLASH": {"passive" : { "default": { "effect": "SET", "r": 250, "g": 250, "b": 250} }},
+
+	"KEY_NUMPAD_0": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_1": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_2": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_3": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_4": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_5": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_6": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_7": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_8": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}},
+	"KEY_NUMPAD_9": {"passive" : { "NUM_LOCK": {"effect": "SET", "r": 250, "g": 250, "b": 250}}}
+}

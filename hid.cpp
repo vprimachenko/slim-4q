@@ -1,6 +1,7 @@
 //
-// Created by le0n on 20-06-18.
+// Created by Valerij Primachenko on 20-06-18.
 //
+#define LOG
 
 #ifdef __unix__                     /* __unix__ is usually defined by compilers targeting Unix systems */
 
@@ -45,7 +46,7 @@ namespace DAS {
 		PHIDP_PREPARSED_DATA    _preparsedData;
 
 		static const uint8_t reportID = 0x01;
-		const static std::vector<uint8_t> OK_RESPONSE{0x03, 0x78, 0x00, 0x96, 0x00, 0x00, 0x00};
+		const static std::vector<uint8_t> OK_RESPONSE{0xed, 0x03, 0x78, 0x00, 0x96, 0x00, 0x00, 0x00};
 		const static std::vector<uint8_t> NOT_READY{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 		std::shared_ptr<char *> find_keyboard_4q() {

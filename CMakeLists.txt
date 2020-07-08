@@ -10,21 +10,37 @@ if (MSVC_VERSION GREATER_EQUAL "1900")
     endif()
 endif()
 
-include_directories(.)
+include_directories(
+        deps/python/include
+        deps
+)
 
-#configure_file(
-#        index.html
-#        rs.rc
-#)
+link_directories(
+        deps/python
+        )
 
-add_executable(DAS
-        hid.cpp
-        keyboard.cpp
-        rs.rc
-        main.cxx)
-
-target_link_libraries(DAS PUBLIC
+link_libraries(
         Hid.lib
         Setupapi.lib
         User32.lib
+        #        Comctl32.lib
+        python38.lib
         Ws2_32.lib)
+
+
+add_executable(DAS
+        trayicon.cpp
+        hid.cpp
+        keyboard.cpp
+        DAS4Q.cpp
+        rest_api.cpp
+        Config.cpp
+        plugins.cpp
+        rs.rc
+        kb.ico
+        main.ico
+        main.cxx)
+
+
+
+

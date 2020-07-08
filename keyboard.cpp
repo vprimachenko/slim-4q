@@ -1,80 +1,160 @@
 //
-// Created by le0n on 20-06-20.
+// Created by Valerij Primachenko on 20-06-20.
 //
 
 #include <numeric>
+#include <vector>
+#include <bitset>
 #include "keyboard.h"
+#include "hid.h"
+#include "DAS4Q.h"
+#include <optional>
+#include <iostream>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <mutex>
 
-DAS::Command::~Command() noexcept {}
+DAS::Command::~Command() noexcept = default;
 
 std::shared_ptr<DAS::Keyboard> DAS::findKeyboard() {
 	using namespace DAS::HID4Q;
 
 	auto path = find_keyboard_4q();
-	start_keyboard(*path.get());
+	start_keyboard(*path);
 
 	return std::make_shared<DAS4Q>();
 }
 
-constexpr std::size_t ceil_to_multiple(std::size_t n, std::size_t mul) {
-	return (n + mul - 1) / mul * mul;
-};
 
-void DAS::DAS4Q::Command4Q::execute() {
-	std::vector<uint8_t> ret(ceil_to_multiple(2 + buffer.size() + 1, 7), 0);
-	ret[0] = 0xEA;
-	ret[1] = buffer.size() + 1;
-	std::copy(buffer.begin(), buffer.end(), ret.begin() + 2);
+std::optional<EffectConfig> find_config(const KeyConfig& config, std::bitset<5> currentState) {
+	currentState.flip();
 
-	auto x_o_r = [](auto a, auto b) {
-		return a ^ b;
-	};
+	auto candidate = std::find_if(config.crbegin(), config.crend(), [&](const auto& a) {
+		return (a.first & currentState) == 0;
+	});
 
-	auto checksum = std::accumulate(buffer.begin(), buffer.end(), 0xEA ^ ret[1], x_o_r);
-
-	ret[buffer.size() + 2] = checksum;
-
-	DAS::HID4Q::set_report(ret);
+	if (candidate != config.crend()) {
+		return candidate->second;
+	} else {
+		return std::nullopt;
+	}
 }
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Flush() {
-	return std::make_shared<DAS4Q::Command4Q>(Keys::Dummy, std::vector<uint8_t>{0x78, 0x0A});
+void DAS::Keyboard::first_update() {
+	lastState[0] = GetKeyState(VK_NUMLOCK) & 0x1;
+	lastState[1] = GetKeyState(VK_CAPITAL) & 0x1;
+	lastState[2] = GetAsyncKeyState(VK_CONTROL) < 0;
+	lastState[3] = GetAsyncKeyState(VK_MENU) < 0;
+	lastState[4] = GetAsyncKeyState(VK_SHIFT) < 0;
+
+	for (const auto&[key, config] : configs) {
+		{
+			auto cc = find_config(config.passive, lastState);
+			if (cc.has_value()) {
+				auto fx = cc.value();
+				createEffect(fx.fx, key, fx.r, fx.g, fx.b)->execute();
+				Sleep(1);
+			}
+		}
+		{
+			auto cc = find_config(config.active, lastState);
+			if (cc.has_value()) {
+				auto fx = cc.value();
+				createEffect(fx.fx, key, fx.r, fx.g, fx.b)->execute();
+				Sleep(1);
+			}
+		}
+	}
+	Flush()->execute();
+	Sleep(1);
+
 }
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Wipe(Keys key) {
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x03, static_cast<uint8_t>(key), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});;
+std::mutex update_lock;
+void DAS::Keyboard::update() {
+	if (!update_lock.try_lock()) return;
+
+	currentState[0] = GetKeyState(VK_NUMLOCK) & 0x1;
+	currentState[1] = GetKeyState(VK_CAPITAL) & 0x1;
+	currentState[2] = GetAsyncKeyState(VK_CONTROL) < 0;
+	currentState[3] = GetAsyncKeyState(VK_MENU) < 0;
+	currentState[4] = GetAsyncKeyState(VK_SHIFT) < 0;
+
+	if (currentState != lastState) {
+		for (const auto&[key, config] : configs) {
+			{
+				auto cc = find_config(config.active, currentState);
+				auto lastcc = find_config(config.active, lastState);
+
+				if (cc.has_value() && cc != lastcc) {
+					auto fx = cc.value();
+					createEffect(fx.fx, key, fx.r, fx.g, fx.b)->execute();
+					Sleep(1);
+				}
+			}
+			{
+				if (overrides.contains(key)) continue;
+
+				auto cc = find_config(config.passive, currentState);
+				auto lastcc = find_config(config.passive, lastState);
+
+				if (cc.has_value() && cc != lastcc) {
+					auto fx = cc.value();
+					createEffect(fx.fx, key, fx.r, fx.g, fx.b)->execute();
+					Sleep(1);
+				}
+			}
+		}
+		Flush()->execute();
+		Sleep(1);
+	}
+
+	lastState = currentState;
+	update_lock.unlock();
 }
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Passive_Color(Keys key, uint8_t r, uint8_t g, uint8_t b) {
-	static const uint8_t fx = 0x01;
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x08, static_cast<uint8_t>(key), fx, r, g, b});
+void DAS::Keyboard::read_config(const nlohmann::json &j) {
+	configs = parse_config(j);
+	first_update();
 }
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Active_Color(Keys key, uint8_t r, uint8_t g, uint8_t b, uint8_t delay) {
-	static const uint8_t fx = 0x1E;
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x04, static_cast<uint8_t>(key), fx, r, g, b, delay, 0x00, 0x00});
+bool DAS::Keyboard::add_override(const std::string& pid, const Key &key, const EffectConfig &fx) {
+	if (createEffect(fx.fx, key, fx.r, fx.g, fx.b)->execute()) {
+		Sleep(1);
+		Flush()->execute();
+		Sleep(1);
+		overrides[key] = pid;
+		return true;
+	}
+	return false;
 }
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Passive_Blink(Keys key, uint8_t r, uint8_t g, uint8_t b) {
-	static const uint8_t fx = 0x1f;
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x08, static_cast<uint8_t>(key), fx, r, g, b, 0, 0, 0});
-}
+bool DAS::Keyboard::remove_override(const std::string& pid) {
+	auto needle = std::find_if(overrides.begin(), overrides.end(), [&](auto pair) {
+		return pair.second == pid;
+	});
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Blink_(Keys key, uint8_t r, uint8_t g, uint8_t b) {
-	static const uint8_t fx = 0x1f;
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x04, static_cast<uint8_t>(key), fx, r, g, b, 0, 0, 0});
-}
+	if (needle == overrides.end()) { return false; }
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Active_Ripple(Keys key, uint8_t r, uint8_t g, uint8_t b) {
-	static const uint8_t fx = 0x11;
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x04, static_cast<uint8_t>(key), fx, r, g, b, 0, 0, 0});
-}
+	const auto key = needle->first;
 
-std::shared_ptr<DAS::Command> DAS::DAS4Q::Active_InverseRipple(Keys key, uint8_t r, uint8_t g, uint8_t b) {
-	static const uint8_t fx = 0x21;
-	return std::make_shared<DAS4Q::Command4Q>(key, std::vector<uint8_t>{0x78, 0x04, static_cast<uint8_t>(key), fx, r, g, b, 0, 0, 0});
-}
+	if (configs.contains(needle->first)) {
+		auto lastcc = find_config(configs[key].passive, lastState);
 
-DAS::DAS4Q::~DAS4Q() {
-	DAS::HID4Q::stop_keyboard();
+		if(lastcc.has_value()) {
+			auto fx = lastcc.value();
+			createEffect(fx.fx, key, fx.r, fx.g, fx.b)->execute();
+		} else {
+			Wipe(key)->execute();
+		}
+		Sleep(1);
+	} else {
+		Wipe(key)->execute();
+	}
+	Flush()->execute();
+	Sleep(1);
+
+	overrides.erase(needle);
+
+	return true;
 }
